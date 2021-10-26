@@ -1,0 +1,6 @@
+Tous les fichiers de configuration ont un backup.
+Un plan de sauvegarde automatique doit être mis en place chaque nuit. Il est important de faire un backup de /etc, /var, /home, /mtn et /root.
+
+Faire le backup et créer un fichier pour les logs dans crontab -e :
+0 5 * * * /backup/backup >> /backup/log_backup
+

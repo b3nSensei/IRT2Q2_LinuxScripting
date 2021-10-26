@@ -1,0 +1,63 @@
+#!/bin/sh
+
+# Install
+yum install ftp vsftpd -y
+
+# Backing up original conf file
+cp /etc/vsftpd/vsftpd.conf /root/backup_conf/original/
+touch /etc/vsftpd/vsftpd.userlist
+
+# Generating RSA key
+mkdir -p /etc/vsftpd/ssl
+openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout /etc/vsftpd/ssl/vsftpd.pem -out /etc/vsftpd/ssl/vsftpd.pem
+
+# Setting up home conf
+echo "anonymous_enable=NO
+local_enable=YES
+write_enable=YES
+local_umask=022
+dirmessage_enable=YES
+xferlog_enable=YES
+xferlog_std_format=YES
+connect_from_port_20=YES
+listen=YES
+listen_ipv6=NO
+pam_service_name=vsftpd
+tcp_wrappers=NO
+check_shell=NO
+ls_recurse_enable=YES
+
+userlist_enable=YES
+userlist_deny=NO
+userlist_file=/etc/vsftpd/vsftpd.userlist
+
+chroot_local_user=YES
+user_sub_token=$USER
+local_root=/home/$USER/ftp
+
+pasv_enable=YES
+pasv_min_port=50001
+pasv_max_port=50010
+
+ssl_enable=YES
+allow_anon_ssl=NO
+ssl_tlsv1=YES
+ssl_sslv2=NO
+ssl_sslv3=NO
+
+require_ssl_reuse=YES
+ssl_ciphers=HIGH
+
+rsa_cert_file=/etc/vsftpd/ssl/vsftpd.pem
+rsa_private_key_file=/etc/vsftpd/ssl/vsftpd.pem" > /etc/vsftpd/vsftpd.conf
+
+# Backing up home conf file 
+cp /etc/vsftpd/vsftpd.conf /root/backup_conf/home/
+cp /etc/vsftpd/vsftpd.userlist /root/backup_conf/home/
+
+# Restart and enable
+systemctl enable vsftpd
+systemctl restart vsftpd
+
+# EOF
+echo "EOF - FTP"

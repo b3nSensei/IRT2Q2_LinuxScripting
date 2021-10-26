@@ -1,0 +1,114 @@
+#!/bin/sh
+# Had to add google DNS in resolv.conf first because repo were broken
+# Install
+yum install bind bind-utils -y
+
+# Backing up original conf file
+cp /etc/named.conf /root/backup_conf/original/
+cp /etc/resolv.conf /root/backup_conf/original/
+
+# Setting up home conf
+# First the /etc/named.conf
+echo "options {
+        listen-on port 53	{ 127.0.0.1; 192.168.1.42; };
+        listen-on-v6 port 53 	{ ::1; };
+        directory       	\"/var/named\";
+        dump-file       	\"/var/named/data/cache_dump.db\";
+        statistics-file 	\"/var/named/data/named_stats.txt\";
+        memstatistics-file 	\"/var/named/data/named_mem_stats.txt\";
+        recursing-file  	\"/var/named/data/named.recursing\";
+        secroots-file   	\"/var/named/data/named.secroots\";
+	allow-query		{ localhost; 192.168.1.0/24; };
+        forwarders		{ 8.8.8.8; 8.8.4.4; };
+
+        recursion yes;
+
+        dnssec-enable yes;
+        dnssec-validation yes;
+
+        bindkeys-file \"/etc/named.iscdlv.key\";
+
+        managed-keys-directory \"/var/named/dynamic\";
+
+        pid-file \"/run/named/named.pid\";
+        session-keyfile \"/run/named/session.key\";
+};
+
+logging {
+        channel default_debug {
+                file \"data/named.run\";
+                severity dynamic;
+        };
+};
+
+zone \".\" IN {
+        type hint;
+        file \"named.ca\";
+};
+
+zone \"projetlinux.local\" IN {
+        type master;
+        file \"forward.projetlinux\";
+        allow-update { none; };
+};
+
+zone \"1.168.192.in-addr.arpa\" IN {
+        type master;
+        file \"reverse.projetlinux\";
+        allow-update { none; };
+};
+
+include \"/etc/named.rfc1912.zones\";
+include \"/etc/named.root.key\";" > /etc/named.conf
+
+# Second the /etc/named/forward.projetlinux
+echo "\$TTL 1D
+@       IN SOA  masterdns.projetlinux.local. root.projetlinux.local. (
+                          504     ; serial
+                          1D      ; refresh
+                          1H      ; retry
+                          1W      ; expire
+                          3H )    ; minimum
+
+@       IN      NS      masterdns.projetlinux.local.
+@       IN      A       192.168.1.42
+masterdns   IN      A       192.168.1.42
+www.toto        CNAME   projetlinux.heh.be.
+www.tata        CNAME   projetlinux.heh.be." > /var/named/forward.projetlinux
+
+# Third, the reverse /var/named/reverse.projetlinux
+echo "\$TTL 1D
+@       IN SOA  masterdns.projetlinux.local. root.projetlinux.local. (
+                          504     ; serial
+                          1D      ; refresh
+                          1H      ; retry
+                          1W      ; expire
+                          3H )    ; minimum
+
+@       IN      NS      masterdns.projetlinux.local.
+@       IN      A       192.168.1.42
+@       IN      PTR     projetlinux.local.
+masterdns   IN      A       192.168.1.42
+42      IN      PTR     masterdns.projetlinux.local." > /var/named/reverse.projetlinux
+
+# Fourth, resolv.conf and sysconfig
+echo "nameserver=192.168.1.42" >> /etc/resolv.conf
+# Commenting original DNS
+sed -i -e "s/^DNS1=8.8.8.8/#DNS1=8.8.8.8/" /etc/sysconfig/network-scripts/ifcfg-ens33
+# Uncomment local DNS (that we preped in earlier script)
+sed -i -e "s/#DNS1=192.168.1.42/DNS1=192.168.1.42/" /etc/sysconfig/network-scripts/ifcfg-ens33
+
+# Backing up home conf file 
+cp /etc/named.conf /root/backup_conf/home/
+cp /var/named/forward.projetlinux /root/backup_conf/home/
+cp /var/named/reverse.projetlinux /root/backup_conf/home/
+cp /etc/resolv.conf /root/backup_conf/home/
+cp /etc/sysconfig/network-scripts/ifcfg-ens33 /root/backup_conf/home/ifcfg-ens33.dnsready
+
+# Enable and restart everything
+systemctl enable named
+systemctl restart named
+systemctl restart network
+
+# EOF
+echo "EOF - Bind"

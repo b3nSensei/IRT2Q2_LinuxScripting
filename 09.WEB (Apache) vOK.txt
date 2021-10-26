@@ -1,0 +1,39 @@
+INSTALLATION:
+	yum install httpd -y
+	systemctl enable httpd
+
+CONFIG:
+CONFFILE:
+	cp /etc/httpd/conf/httpd.conf /etc/httpd/conf/httpd.conf.backup => //Not used but backup anyway just in case
+	cp /etc/httpd/conf.d/userdir.conf /etc/httpd/conf.d/userdir.conf.backup
+	nano /etc/httpd/conf.d/userdir.conf
+		<IfModule mod_userdir.c>
+		    UserDir enabled webuser
+		    UserDir public_html
+		</IfModule>
+		<Directory /home/*/public_html>
+		    Options Indexes Includes FollowSymlinks
+		    Require all granted
+		</Directory>
+
+USERS: 
+	useradd -s /sbin/nologin webuser
+	passwd webuser	
+	usermod -a -G apache webuser
+
+SITE:
+	mkdir /home/webuser/public_html
+	chmod 711 /home/webuser
+	chown webuser:webuser /home/webuser/public_html
+	chmod 755 -R /home/webuser/public_html
+	echo "web1" >> /home/webuser/public_html/index.html
+
+	systemctl reload httpd
+	systemctl restart httpd
+
+TEST:
+	httpd -S
+	Dans un navigateur, entrée "http://IPSRV/~username"
+
+EOF:
+	webuser:webtest

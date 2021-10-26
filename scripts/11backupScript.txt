@@ -1,0 +1,9 @@
+#!/bin/sh
+
+cp -avr /etc /backup
+cp -avr /var /backup
+cp -avr /home /backup
+cp -avr /root /backup
+
+# EOF
+echo "EOF - Backup"

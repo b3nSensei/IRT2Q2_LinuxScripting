@@ -1,0 +1,54 @@
+#!/bin/sh
+
+#Random config test
+echo "----------------------------------------------SELinux"
+getenforce
+echo "---------------------------------------------Ifconfig"
+ifconfig ens33 |grep inet
+echo "--------------------------------------------------NTP"
+date -R
+ntpq -p
+echo "-----------------------------------------------ClamAV"
+crontab -l
+wget http://www.eicar.org/download/eicar_com.zip
+clamscan --infected --remove --recursive
+echo "-------------------------------------------------BIND"
+dig masterdns.projetlinux.local
+nslookup www.google.be
+echo "--------------------------------------------------SMB"
+testparm
+smbclient -L localhost -N
+pdbedit -L
+echo "--------------------------------------------------PHP"
+php -v
+echo "-------------------------------------------------CRON"
+crontab -l
+echo "------------------------------Firewall-INPUTandOUTPUT"
+iptables -L INPUT
+iptables -L OUTPUT
+echo "--------------------------Configuration-Backup-Folder"
+ll /root/backup_conf/home
+
+#Process test
+echo "----------------------------------------------Process"
+echo " SSH: systemctl status sshd |grep Active"
+systemctl status sshd |grep Active
+echo " NTP: systemctl status ntpd |grep Active"
+systemctl status ntpd |grep Active
+echo " ClamAV: systemctl status clamd@scan |grep Active"
+systemctl status clamd@scan |grep Active
+echo " BIND: systemctl status named |grep Active"
+systemctl status named |grep Active
+echo " VSFTPD: systemctl status vsftpd |grep Active"
+systemctl status vsftpd |grep Active
+echo " SMB: systemctl status smb|grep Active"
+systemctl status smb|grep Active
+echo " NMB: systemctl status nmb|grep Active"
+systemctl status nmb|grep Active
+echo " MYSQLD: systemctl status mysqld |grep Active"
+systemctl status mysqld |grep Active
+echo " HTTPD: systemctl status httpd |grep Active"
+systemctl status httpd |grep Active
+echo " Firewalld: systemctl status firewalld |grep Active"
+systemctl status firewalld |grep Active
+echo "--------------------------------------------------EOF"

@@ -1,0 +1,56 @@
+#!/bin/sh
+
+# Disabling SELINUX
+echo "SELINUX=disabled" > /etc/selinux/config
+echo "SELINUXTYPE=targeted" >> /etc/selinux/config
+
+# Customizing shell 
+# (bcoz we're not noobs.)
+# (also bcoz it provide better reading of huge screen with tones of stuff)
+echo "export PS1=\"\[\e[32m\][\[\e[m\]\[\e[32m\]\u\[\e[m\]\[\e[32m\]@\[\e[m\]\[\e[32m\]\h\[\e[m\]\[\e[32m\] \[\e[m\]\[\e[32m\]\W\[\e[m\]\[\e[32m\]]\[\e[m\] \"" >> /etc/bashrc
+
+# Making backup conf dir
+mkdir /root/backup_conf/
+mkdir /root/backup_conf/original
+mkdir /root/backup_conf/home
+
+# Backing up network base conf
+cp /etc/sysconfig/network-scripts/ifcfg-ens33 /root/backup_conf/original/
+
+# Setting up network home conf
+echo "TYPE=Ethernet
+PROXY_METHOD=none
+BROWSER_ONLY=no
+BOOTPROTO=static
+IPADDR=192.168.1.42
+NETMSK=255.255.255.0
+GATEWAY=192.168.1.1
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_FAILURE_FATAL=no
+IPV6_ADDR_GEN_MODE=stable-privacy
+NAME=ens33
+UUID=d4b4ce5c-dc99-4201-b6c2-01dd22d3cf79
+DEVICE=ens33
+ONBOOT=yes
+PREFIX=24
+# Comment google DNS and uncomment local DNS when bind is done
+DNS1=8.8.8.8
+#DNS1=192.168.1.42
+PEERDNS=no
+ZONE="> /etc/sysconfig/network-scripts/ifcfg-ens33
+
+# Backing up network home conf
+cp /etc/sysconfig/network-scripts/ifcfg-ens33 /root/backup_conf/home/
+
+#We make CMD line the default mode
+systemctl set-default multi-user.target
+
+# Restart the whole thing (specially for selinux)
+reboot
+
+# EOF
+echo "EOF - Base"

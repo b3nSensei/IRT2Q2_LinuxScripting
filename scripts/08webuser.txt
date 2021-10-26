@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# User creation 
+read -p "Enter username to create: " webuname
+echo $webuname will be created
+useradd -s /sbin/nologin $webuname
+passwd $webuname
+usermod -a -G apache $webuname
+
+# Basic userpage
+mkdir -p /home/$webuname/public_html
+chmod 711 /home/$webuname
+chown $webuname:$webuname /home/$webuname/public_html
+chmod 775 -R /home/$webuname/public_html
+echo "Welcome to $webuname HTML web page." > /home/$webuname/public_html/index.html
+echo "Welcome to $webuname PHP web page.
+<?php phpinfo(); ?>" > /home/$webuname/public_html/index.php
+
+echo "You can now acces $webuname webpage in your browser"
+echo "Just use: http://[thiserverip]/~$webuname"
+
+# EOF
+echo "EOF - HTTPD Useradd"

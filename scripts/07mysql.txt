@@ -1,0 +1,24 @@
+#!/bin/sh
+
+# Install
+wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+rpm -ivh mysql-community-release-el7-5.noarch.rpm
+yum update -y
+yum install mysql-server -y
+systemctl start mysqld
+
+# Run the following to secure installation and follow the steps:
+# Hit enter when asked for root mysql password
+# Set root mysql password
+# Remove anonymous? yes
+# Disable root remote login? yes
+# Remove test db? yes
+# Reload tables? yes
+mysql_secure_installation
+
+# Enable and restart everyhting
+systemctl restart mysqld
+systemctl enable mysqld
+
+# EOF
+echo "EOF - MYSQL"

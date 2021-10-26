@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# User creation 
+read -p "Enter username to create: " smbuname
+echo $smbuname will be created
+useradd -m $smbuname
+passwd $smbuname
+usermod -a -G smbgrp $smbuname
+smbpasswd -a $smbuname -d
+
+# EOF
+echo "EOF - SMB Useradd"

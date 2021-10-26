@@ -1,0 +1,46 @@
+VMWARE:
+	New vm, PL - CentOS7, 20Go HD 
+
+Centos 7:
+	french, bureau gnomme no option,
+	nom d'hote réseau: projetlinux.localdomain
+
+Partition:
+	/boot	Partition Standard	Ext4	500Mio
+	swap	Partition Standard	SWAP	2000Mio
+	/	LVM	Ext4	7000Mio
+	/home	LVM	Ext4	500Mio
+	/var	LVM	Ext4	2000Mio
+	/share	LVM	Ext4	le reste
+USER:
+	MDP root
+	add normal user
+
+Config générale: (dans centos)
+	Network: Filaire => connexion automatique
+	bridge
+	static ip:
+		cp /etc/sysconfig/network-scripts/ifcfg-[intname] /etc/sysconfig/network-scripts/ifcfg-[intname].backup
+		nano /etc/sysconfig/network-scripts/ifcfg-[intname]
+			BOOTPROTO=static
+			IPADDR=ipvoulu
+			NETMAKS=maskvoulu
+			GATEWAY=ipgateway du reseau
+		cp /etc/sysconfig/network-scripts/ifcfg-[intname] /etc/sysconfig/network-scripts/ifcfg-[intname].home
+
+SElinux
+	nano /etc/selinux/config
+		SELINUX=disabled
+
+Custom Bash:
+	nano /etc/bashrc
+		export PS1="\[\e[32m\][\[\e[m\]\[\e[32m\]\u\[\e[m\]\[\e[32m\]@\[\e[m\]\[\e[32m\]\h\[\e[m\]\[\e[32m\] \[\e[m\]\[\e[32m\]\W\[\e[m\]\[\e[32m\]]\[\e[m\] "
+
+
+Todo next:
+•	Samba et NFS
+•	NTP
+•	SSH
+•	DNS
+•	Apache
+•	FTP

@@ -1,0 +1,79 @@
+had to add google DNS in resolv.conf first because repo were broken
+dunno y tho
+
+INSTALLATION:
+	yum install bind bind-utils
+
+CONFIG:
+	cp /etc/named.conf /etc/named.conf.backup
+	nano /etc/named.conf
+        	listen-on port 53	{ 127.0.0.1; 192.168.1.42; };
+		allow-query		{ localhost; 192.168.1.0/24; };
+	        forwarders		{ 8.8.8.8; 8.8.4.4; };
+	//Le forwarder sert à ce que la machine accède à une adresse qu'elle ne connait 
+	//pas via un serveur qui lui la connait.
+	//uses this too: https://www.unixmen.com/setting-dns-server-centos-7/
+
+	zone "projetlinux.local" IN {
+        	type master;
+        	file "forward.projetlinux";
+        	allow-update { none; };
+	};
+
+	zone "1.168.192.in-addr.arpa" IN {
+        	type master;
+        	file "reverse.projetlinux";
+        	allow-update { none; };
+	};
+
+	cp /etc/named.conf /etc/named.conf.home
+
+	nano /var/named/forward.projetlinux
+		$TTL 1D
+		@       IN SOA  masterdns.projetlinux.local. root.projetlinux.local. (
+		                          504     ; serial
+		                          1D      ; refresh
+		                          1H      ; retry
+		                          1W      ; expire
+		                          3H )    ; minimum
+		
+		@       IN      NS      masterdns.projetlinux.local.
+		@       IN      A       192.168.1.42
+		masterdns   IN      A       192.168.1.42
+		www.toto        CNAME   projetlinux.heh.be.
+		www.tata        CNAME   projetlinux.heh.be.
+	
+	nano /var/named/reverse.projetlinux
+		$TTL 1D
+		@       IN SOA  masterdns.projetlinux.local. root.projetlinux.local. (
+		                          504     ; serial
+		                          1D      ; refresh
+		                          1H      ; retry
+		                          1W      ; expire
+		                          3H )    ; minimum
+		
+		@       IN      NS      masterdns.projetlinux.local.
+		@       IN      A       192.168.1.42
+		@       IN      PTR     projetlinux.local.
+		masterdns   IN      A       192.168.1.42
+		42      IN      PTR     masterdns.projetlinux.local.
+
+        cp /var/named/forward.projetlinux.home
+	cp /var/named/reverse.projetlinux.home
+	named-checkconf /etc/named.conf
+	named-checkzone projetlinux.local /var/named/forward.projetlinux
+	named-checkzone projetlinux.local /var/named/reverse.projetlinux
+	nano /etc/sysconfig/network-scripts/ifcfg-ens33
+		DNS1=192.168.1.42
+	cp /etc/sysconfig/network-scripts/ifcfg-ens33 /etc/sysconfig/network-scripts/ifcfg-ens33.home
+	nano /etc/resolv.conf
+		nameserver=192.168.1.42
+	cp /etc/resolv.conf.home
+
+	systemctl restart network
+	systemctl enable named
+	systemctl start named
+		
+TEST:
+	dig masterdns.projetlinux.local
+	nslookup www.google.be 

@@ -1,0 +1,44 @@
+#!/bin/sh
+
+systemctl stop firewalld
+
+# Install
+yum install -y openssh openssh-server openssh-clients openssl-libs
+
+# Backing up original conf file
+cp /etc/ssh/sshd_config /root/backup_conf/original/
+
+# Setting up home conf
+echo "HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_ecdsa_key
+HostKey /etc/ssh/ssh_host_ed25519_key
+SyslogFacility AUTHPRIV
+PermitRootLogin no
+AuthorizedKeysFile	.ssh/authorized_keys
+PasswordAuthentication yes
+ChallengeResponseAuthentication no
+GSSAPIAuthentication yes
+GSSAPICleanupCredentials no
+UsePAM yes
+X11Forwarding yes
+Banner /etc/banner
+AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
+AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
+AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
+AcceptEnv XMODIFIERS
+Subsystem	sftp	/usr/libexec/openssh/sftp-server" > /etc/ssh/sshd_config
+
+# Setting up the banner
+echo "Unauthorized Acces is Prohibited" > /etc/banner
+
+# Backing up home conf file 
+cp /etc/ssh/sshd_config /root/backup_conf/home/
+cp /etc/banner /root/backup_conf/home/
+
+# Enable, reload and restart everything
+systemctl enable sshd.service
+systemctl restart sshd.service
+
+# EOF
+echo "EOF - SSH"
+

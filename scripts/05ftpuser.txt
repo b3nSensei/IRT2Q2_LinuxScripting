@@ -1,0 +1,24 @@
+#!/bin/sh
+# User creation 
+read -p "Enter username to create: " ftpuname
+echo $ftpuname will be created
+useradd -m $ftpuname
+passwd $ftpuname
+echo $ftpuname >> /etc/vsftpd/vsftpd.userlist
+
+# Alt Local root FTP dir
+mkdir /home/$ftpuname/ftp
+chown nobody:nobody /home/$ftpuname/ftp
+chmod a-w /home/$ftpuname/ftp
+
+# Dir for user file
+mkdir /home/$ftpuname/ftp/files
+chown $ftpuname:$ftpuname  /home/$ftpuname/ftp/files
+chmod 0700 /home/$ftpuname/ftp/files/
+
+#Backing up and restart
+cp /etc/vsftpd/vsftpd.userlist /root/backup_conf/home/
+systemctl restart vsftpd
+
+# EOF
+echo "EOF - FTP Useradd"

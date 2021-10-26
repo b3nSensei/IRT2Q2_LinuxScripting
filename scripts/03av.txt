@@ -1,0 +1,38 @@
+#!/bin/sh
+
+# Install
+yum -y install epel-release
+yum clean all
+yum -y install clamav-server clamav-data clamav-update clamav-filesystem clamav clamav-scanner-systemd clamav-devel clamav-lib clamav-server-systemd
+
+# Backing up original conf file
+cp /etc/clamd.d/scan.conf /root/backup_conf/original/
+cp /etc/freshclam.conf /root/backup_conf/original/
+
+# Setting up home conf
+sed -i -e "s/^Example/#Example/" /etc/clamd.d/scan.conf
+sed -i -e "s/^Example/#Example/" /etc/freshclam.conf
+sed -i -e "s/^User/#User/" /etc/clamd.d/scan.conf
+echo "User root" >> /etc/clamd.d/scan.conf 
+echo "LocalSocket /var/run/clamd.scan/clamd.sock" >> /etc/clamd.d/scan.conf
+
+# Backing up home conf file 
+cp /etc/clamd.d/scan.conf /root/backup_conf/home/
+cp /etc/freshclam.conf /root/backup_conf/home/
+
+# Enable and restart
+freshclam
+systemctl enable clamd@scan
+systemctl restart clamd@scan
+
+# Adding cron job for updates and scan
+# crontab -l to lists the current crontab jobs
+# cat prints it
+# echo prints the new command
+# crontab - adds all the printed stuff into the crontab file
+# DDB update twice a day, AV update and sys scan everynight 
+crontab -l | { cat; echo "00 01,13 * * *  /usr/bin/freshclam --quiet";  } | crontab -
+crontab -l | { cat; echo "0 3 * * * /bin/freshclam ; /bin/clamscan / --recursive=yes -i> /tmp/clamav.log ; mail -s clamav_log_`hostname` helpdesk@agix.local< /tmp/clamav.log"; } | crontab -
+
+# EOF
+echo "EOF - ClamAV"

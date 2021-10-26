@@ -1,0 +1,19 @@
+INSTALLATION:
+	yum install ntp //deja fait
+
+CONFIG:
+	cp /etc/ntp.conf /etc/ntp.conf.backup
+	nano /etc/ntp.conf
+		logfile /var/log/ntp.log  //path to log file (create and add permission if non-existant)
+	cp /etc/ntp.conf /etc/ntp.conf.home
+
+TEST:
+	systemctl stop iptables // !!! after reboot
+	systemctl start ntpd	// !! after reboot
+	system ctl status ntpd
+	system ctl enable ntpd
+	ntpq -p //won't work if firewall is up and service not started after reboot
+	date -R 
+	ntpdate -q ipsrvr
+
+EOF:

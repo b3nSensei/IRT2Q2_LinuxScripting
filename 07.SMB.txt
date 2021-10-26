@@ -1,0 +1,63 @@
+INSTALLATION:
+	yum install samba samba-client
+
+CONFIG:
+	cp /etc/samba/smb.conf /etc/samba/smb.conf.backup
+	mkdir -pv -m 1777 /share/samba/{public,confidentiel}
+	echo "" > /etc/samba/smb.conf	
+	nano /etc/samba/smb.conf
+	[Global]
+			workgroup = WORKGROUP //can change but need to change on the client too
+			netbios name = srvprojetlinux
+			server string = Srv Linux (VM)
+			domain master = no
+			invalid users = root
+			encrypt passwords = yes
+			guest account = smbguest 
+			log level = 0
+			log file = /var/log/samba/log.%m 
+			max log size = 1000
+			unix password sync = no 
+			security = user
+			force group = users
+			create mode = 0660
+			directory mode = 0770
+			passdb backend = tdbsam
+	[Public] 
+			path = /share/samba/public
+			comment = Partage public
+			public = yes
+			only guest = yes
+			read only = no
+	[Confidentiel]
+			path = /share/samba/confidentiel
+			comment = partage confidentiel
+			read only = no 
+			invalid users = root nobody sbmguest
+
+	// Ajouter des users avant de restart le tout
+	systemctl restart smb
+	systemctl restart nmb
+	systemctl enable smb 
+	systemctl enable nmb
+	cp /etc/samba/smb.conf /etc/samba/smb.conf.home
+
+SMB USER:
+	groupadd users //deja présent
+	useradd -g users -d /dev/null -s /sbin/nologin smbguest
+	passwd -l smbguest 
+	smbpasswd -a smbguest -d
+USER:
+	useradd smbuser
+	usermod -a -G users smbuser
+	smbpasswd -a smbuser
+
+TEST:
+	testparm
+	pdbedit -L 
+	smbclient -L localhost -N
+	//systemctl stop firewalld.service if not good firewall
+
+EOF:
+	smbuser:smbtest
+

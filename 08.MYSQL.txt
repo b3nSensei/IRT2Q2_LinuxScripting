@@ -1,0 +1,47 @@
+INSTALLATION:
+MYSQL
+	wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+	rpm -ivh mysql-community-release-el7-5.noarch.rpm
+	yum update
+	yum install mysql-server
+	systecmtl start mysqld //needed for secure install
+
+PHPMYADMIN:
+	wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+	rpm -ivh epel-release-6-8.noarch.rpm
+	yum install phpmyadmin
+
+CONFIG:
+MYSQL:
+	mysql_secure_installation
+		toor
+		remove anonymous yes
+		disable root remote login yes
+		remove test db yes
+		reload tables yes
+PHPMYADMIN:
+	cp /etc/httpd/conf.d/phpMyAdmin.conf /etc/httpd/conf.d/phpMyAdmin.conf.backup
+	nano /etc/httpd/conf.d/phpMyAdmin.conf
+		<Directory /usr/share/phpMyAdmin/>
+		   AddDefaultCharset UTF-8	
+		   <IfModule mod_authz_core.c>
+		     # Apache 2.4
+		     <RequireAny>
+		       Require ip 127.0.0.1
+		       Require ip ::1
+		     </RequireAny>
+		   </IfModule>
+		   <IfModule !mod_authz_core.c>
+		     # Apache 2.2
+		     Order Deny,Allow
+		     Deny from All
+		     Allow from 127.0.0.1
+		     Allow from ::1
+		   </IfModule>
+		</Directory>
+	systemctl restart httpd
+
+TEST:
+	?
+
+EOF:

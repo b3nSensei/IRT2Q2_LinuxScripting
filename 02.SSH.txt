@@ -1,0 +1,21 @@
+INSTALLATION : 
+	yum install sshd
+	systemctl status sshd
+	*optionnel, deja installer et running*
+
+CONFIG :
+	cp /etc/ssh/sshd_config ssh_config.backup
+	nano /etc/sshsshd_config
+		PermitRootLogin no 
+		PasswordAuthentification yes //deja fait
+		Banner /etc/motd 
+	nano /etc/motd => insert your message there
+	systemctl enable sshd.service
+	systemctl reload sshd.service
+	cp /etc/ssh/sshd_config ssh_config.home
+keys:
+	ssh-keygen
+		=default (~/.ssh/id_rsa)
+	ssh-copy-id -i .ssh/id_rsa.pub targetedip
+	... or use putty.
+

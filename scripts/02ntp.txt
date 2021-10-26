@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# Install
+yum install ntp -y
+systemctl enable ntpd
+
+# Backing up original conf file
+cp /etc/ntp.conf /root/backup_conf/original/
+
+# Setting up log file
+echo "# Logfile for NTP service" > /var/log/ntp.log
+
+# Sed will comment the default line, echo will add our version of it
+sed -i -e "s/^logfile*/#logfile*/" /etc/ntp.conf
+echo "logfile /var/log/ntp.log" >> /etc/ntp.conf
+
+# Backing up home conf file 
+cp /etc/ntp.conf /root/backup_conf/home/
+
+# Restart and enable
+systemctl enable ntpd
+systemctl restart ntpd
+
+# EOF
+echo "EOF - NTP"

@@ -1,0 +1,30 @@
+#!/bin/sh
+
+# Install
+yum install httpd -y
+systemctl enable httpd
+
+# Backing up original conf file
+# /etc/httpd/conf/httpd.conf is not used but backup just in case
+cp /etc/httpd/conf/httpd.conf /root/backup_conf/original/
+cp /etc/httpd/conf.d/userdir.conf /root/backup_conf/original/
+
+# Setting up home conf
+echo "<IfModule mod_userdir.c>
+	UserDir enabled webuser
+	UserDir public_html
+</IfModule>
+<Directory /home/*/public_html>
+	Options Indexes Includes FollowSymlinks
+	Require all granted
+</Directory>" > /etc/httpd/conf.d/userdir.conf
+
+# Backing up home conf file 
+cp /etc/httpd/conf/httpd.conf /root/backup_conf/home/
+
+# Enable and restart everyhting
+systemctl reload httpd
+systemctl restart httpd
+
+# EOF
+echo "EOF - HTTPD"

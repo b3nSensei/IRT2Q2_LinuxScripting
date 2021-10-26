@@ -1,0 +1,51 @@
+INSTALLATION:
+	yum -y install epel-release
+	yum clean all
+	yum -y install clamav-server clamav-data clamav-update clamav-filesystem clamav clamav-scanner-systemd clamav-devel clamav-lib clamav-server-systemd
+
+CONFIG:
+	cp /etc/clamd.d/scan.conf /etc/clamd.d/scan.conf.backup
+	cp /etc/freshclam.conf /etc/freshclam.conf.backup
+	sed -i -e "s/^Example/#Example/" /etc/clamd.d/scan.conf
+	sed -i -e "s/^Example/#Example/" /etc/freshclam.conf
+	nano /etc/clamd.d/scan.conf 
+		User root
+		LocalSocket /var/run/clamd.scan/clamd.sock
+	freshclam
+
+ //OPTIONNAL: Freshclam as a systemd service:
+	nano /usr/lib/systemd/system/freshclam.service
+	[Unit]
+	    Description = freshclam scanner
+	    After = network.target[Service]
+	    Type = forking
+	    ExecStart = /usr/bin/freshclam -d -c 2
+	    Restart = on-failure
+	    PrivateTmp = true
+	[Install] WantedBy=multi-user.target
+	systemctl start freshclam
+	systemctl enable freshclam
+ //didn't work
+
+	systemctl enable clamd@scan
+	systemctl start clamd@scan
+	cp /etc/clamd.d/scan.conf /etc/clamd.d/scan.conf.home
+	cp /etc/freshclam.conf /etc/freshclam.conf.home
+
+CRONTAB:
+	Nous mettrons à jour nos bdd deux fois par jour. 
+	Chaque nuit, il faudra que l’antivirus se mette à jour et 
+	fasse une analyse complète du système.
+
+	crontab -e
+	00 01,13 * * *  /usr/bin/freshclam --quiet
+	0 3 * * * /bin/freshclam ; /bin/clamscan / --recursive=yes -i> /tmp/clamav.log ; mail -s clamav_log_`hostname` helpdesk@agix.local< /tmp/clamav.log
+
+TEST:
+	wget http://www.eicar.org/download/eicar_com.zip
+	clamscan --infected --remove --recursive
+
+EOF:
+
+
+

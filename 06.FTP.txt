@@ -1,0 +1,57 @@
+INSTALLATION:
+	yum install ftp vsftpd
+
+CONFIG:
+	cp /etc/vsftpd/vsftpd.conf /etc/vsftpd/vsftpd.conf.backup
+	rm -rf /etc/vsftpd/vsftpd.conf
+	nano /etc/vsftpd/vsftpd.conf
+		anonymous_enable=NO
+		local_enable=YES
+		write_enable=YES
+		local_umask=022
+		dirmessage_enable=YES
+		xferlog_enable=YES
+		xferlog_std_format=YES
+		listen=YES
+		listen_ipv6=NO
+		pam_service_name=vsftpd
+		tcp_wrappers=NO
+		check_shell=NO
+		ls_recurse_enable=YES
+
+		userlist_enable=YES
+		userlist_deny=NO
+		userlist_file=/etc/vsftpd/vsftpd.userlist
+
+		chroot_local_user=YES
+		user_sub_token=$USER
+		local_root=/home/$USER/
+
+		pasv_enable=YES
+		pasv_min_port=50001
+		pasv_max_port=50010
+	cp /etc/vsftpd/vsftpd.conf /etc/vsftpd/vsftpd.conf.home
+USER:
+	useradd -m ftpuser
+	passwd ftpuser
+	//Alt Local root FTP dir
+	mkdir /home/ftpuser/ftp
+	chown nobody:nobody /home/ftpuser/ftp
+	chmod a-w /home/ftpuser/ftp
+	//Dir for user file
+	mkdir /home/ftpuser/ftp/files
+	chown ftpuser:ftpuser  /home/ftpuser/ftp/files
+	chmod 0700 /home/ftpuser/ftp/files/
+	echo ftpuser >> /etc/vsftpd/vsftpd.userlist
+	
+	systemctl restart vsftpd
+	systemctl enable vsftpd
+
+TEST:
+	ftp [IP]
+	 =>login name
+	 =>password
+	Or filezilla
+
+EOF:
+	ftpuser:ftptest
